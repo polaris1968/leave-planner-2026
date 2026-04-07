@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<!-- saved from url=(0121)file:///C:/Users/Pollalis/Downloads/%EC%97%B0%EC%B0%A8%EA%B3%84%ED%9A%8D_%EA%B0%84%ED%8A%B8%EC%B0%A8%ED%8A%B8_2026_2.html -->
-<html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>2026 한국 관리자 연차 간트차트</title>
 <style>
@@ -55,18 +55,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .fg label{font-size:11px;color:#888}
 .fg input,.fg select{border:1px solid #ccc;border-radius:8px;padding:5px 8px;font-size:12px;background:#fff;color:#1a1a1a}
 .add-warn{background:#faeeda;border:1px solid #ef9f27;border-radius:8px;padding:6px 10px;font-size:12px;color:#633806;margin-bottom:0.5rem;display:none}
+.add-ok{background:#e1f5ee;border:1px solid #5dcaa5;border-radius:8px;padding:6px 10px;font-size:12px;color:#085041;margin-bottom:0.5rem;display:none}
 .btn-add{background:#e6f1fb;color:#0c447c;border:1px solid #85b7eb;border-radius:8px;padding:6px 16px;font-size:12px;cursor:pointer;font-weight:500}
 .btn-add:hover{background:#b5d4f4}
+.btn-add:disabled{opacity:0.5;cursor:not-allowed}
 .list-section{background:#fff;border:1px solid #e0e0da;border-radius:12px;padding:1rem 1.25rem;margin-top:1rem}
 .list-title{font-size:13px;font-weight:500;color:#888;margin-bottom:0.75rem}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{text-align:left;padding:6px 8px;color:#888;font-weight:400;border-bottom:1px solid #e0e0da}
 td{padding:6px 8px;border-bottom:1px solid #e0e0da;vertical-align:middle}
 tr:last-child td{border-bottom:none}
-.badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:500}
 .st-select{border:1px solid #ccc;border-radius:4px;padding:2px 4px;font-size:11px;background:#fff;cursor:pointer}
 .del-btn{background:transparent;border:none;cursor:pointer;padding:2px 6px;border-radius:4px;font-size:12px;color:#888}
 .del-btn:hover{background:#f0f0ee;color:#a32d2d}
+.sync-bar{display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;font-size:12px;color:#888}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#ccc}
+.sync-dot.ok{background:#1D9E75}
+.sync-dot.loading{background:#f0a500;animation:blink 1s infinite}
+.sync-dot.error{background:#a32d2d}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 @media(max-width:600px){.cards{grid-template-columns:repeat(2,1fr)}.form-row{flex-direction:column}}
 </style>
 </head>
@@ -74,18 +81,20 @@ tr:last-child td{border-bottom:none}
 <div class="wrap">
   <div class="top-bar">
     <h2>2026 한국 관리자 연차 간트차트</h2>
-    <button class="btn active" id="vbtn-all" onclick="setView(&#39;all&#39;)">전체</button>
-    <button class="btn" id="vbtn-approved" onclick="setView(&#39;approved&#39;)">승인만</button>
-    <button class="btn" id="vbtn-pending" onclick="setView(&#39;pending&#39;)">검토중 포함</button>
+    <button class="btn active" id="vbtn-all" onclick="setView('all')">전체</button>
+    <button class="btn" id="vbtn-approved" onclick="setView('approved')">승인만</button>
+    <button class="btn" id="vbtn-pending" onclick="setView('pending')">검토중 포함</button>
     <button class="btn" onclick="exportCSV()">CSV 내보내기</button>
+    <button class="btn" onclick="loadData()">새로고침</button>
   </div>
 
-  <div class="cards" id="summary-cards">
-    <div class="card"><div class="card-label">인원</div><div class="card-val">7명</div></div>
-    <div class="card"><div class="card-label">신청 건수</div><div class="card-val">1건</div></div>
-    <div class="card"><div class="card-label">동시 부재 충돌</div><div class="card-val ">0건</div></div>
-    <div class="card"><div class="card-label">승인 완료</div><div class="card-val">0건</div></div></div>
-  <div id="conflict-banner" class="conflict-banner" style="display: none;"></div>
+  <div class="sync-bar">
+    <div class="sync-dot loading" id="sync-dot"></div>
+    <span id="sync-msg">데이터 불러오는 중...</span>
+  </div>
+
+  <div class="cards" id="summary-cards"></div>
+  <div id="conflict-banner" class="conflict-banner"></div>
 
   <div class="legend">
     <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div>승인</div>
@@ -95,32 +104,8 @@ tr:last-child td{border-bottom:none}
     <div class="legend-item"><div class="legend-dot" style="background:#E24B4A;opacity:0.35"></div>겹침 구간</div>
   </div>
 
-  <div class="month-filter" id="month-filter"><button class="mf-btn " onclick="setMonth(null)">전체</button><button class="mf-btn " onclick="setMonth(0)">1월</button><button class="mf-btn " onclick="setMonth(1)">2월</button><button class="mf-btn " onclick="setMonth(2)">3월</button><button class="mf-btn " onclick="setMonth(3)">4월</button><button class="mf-btn " onclick="setMonth(4)">5월</button><button class="mf-btn active" onclick="setMonth(5)">6월</button><button class="mf-btn " onclick="setMonth(6)">7월</button><button class="mf-btn " onclick="setMonth(7)">8월</button><button class="mf-btn " onclick="setMonth(8)">9월</button><button class="mf-btn " onclick="setMonth(9)">10월</button><button class="mf-btn " onclick="setMonth(10)">11월</button><button class="mf-btn " onclick="setMonth(11)">12월</button></div>
-  <div class="gantt-outer"><div class="gantt-wrap" id="gantt">
-    <div class="gantt-header"><div class="gh-name">이름</div><div class="gh-months"><div class="gh-month">6월</div></div></div>
-    <div class="gantt-row">
-      <div class="gr-name"><div class="gr-name-text">김선숙</div><div class="gr-name-sub">법인장</div></div>
-      <div class="gr-track"><div class="leave-bar" style="left:0.97%;width:20.00%;background:#E6F1FB;border:1px solid #378ADD" onmouseenter="showTT(event,1)" onmouseleave="hideTT()">
-        <span class="leave-bar-label" style="color:#0C447C">6일</span></div></div>
-    </div><div class="gantt-row">
-      <div class="gr-name"><div class="gr-name-text">김일환</div><div class="gr-name-sub">KIM ILHWAN</div></div>
-      <div class="gr-track"><div style="position:absolute;top:50%;transform:translateY(-50%);left:12px;font-size:11px;color:#aaa">신청 없음</div></div>
-    </div><div class="gantt-row">
-      <div class="gr-name"><div class="gr-name-text">엄춘섭</div><div class="gr-name-sub">EOM CHUNSEOB</div></div>
-      <div class="gr-track"><div style="position:absolute;top:50%;transform:translateY(-50%);left:12px;font-size:11px;color:#aaa">신청 없음</div></div>
-    </div><div class="gantt-row">
-      <div class="gr-name"><div class="gr-name-text">명준석</div><div class="gr-name-sub">MYOUNG JOONSUK</div></div>
-      <div class="gr-track"><div style="position:absolute;top:50%;transform:translateY(-50%);left:12px;font-size:11px;color:#aaa">신청 없음</div></div>
-    </div><div class="gantt-row">
-      <div class="gr-name"><div class="gr-name-text">기선희</div><div class="gr-name-sub">KI SUN HEE</div></div>
-      <div class="gr-track"><div style="position:absolute;top:50%;transform:translateY(-50%);left:12px;font-size:11px;color:#aaa">신청 없음</div></div>
-    </div><div class="gantt-row">
-      <div class="gr-name"><div class="gr-name-text">박현진</div><div class="gr-name-sub">PARK HYUNJIN</div></div>
-      <div class="gr-track"><div style="position:absolute;top:50%;transform:translateY(-50%);left:12px;font-size:11px;color:#aaa">신청 없음</div></div>
-    </div><div class="gantt-row">
-      <div class="gr-name"><div class="gr-name-text">신헌정</div><div class="gr-name-sub">고문</div></div>
-      <div class="gr-track"><div style="position:absolute;top:50%;transform:translateY(-50%);left:12px;font-size:11px;color:#aaa">신청 없음</div></div>
-    </div></div></div>
+  <div class="month-filter" id="month-filter"></div>
+  <div class="gantt-outer"><div class="gantt-wrap" id="gantt"></div></div>
   <div id="tt" class="tooltip-box"></div>
 
   <div class="add-section">
@@ -140,29 +125,19 @@ tr:last-child td{border-bottom:none}
       </div>
       <div class="fg"><label>비고</label><input type="text" id="f-note" placeholder="귀국, 가족행사 등"></div>
     </div>
-    <div id="add-warn" class="add-warn" style="display: none;">시작일과 종료일을 입력해 주세요.</div>
-    <button class="btn-add" onclick="addEntry()">등록</button>
+    <div id="add-warn" class="add-warn"></div>
+    <div id="add-ok" class="add-ok"></div>
+    <button class="btn-add" id="btn-submit" onclick="addEntry()">등록</button>
   </div>
 
   <div class="list-section">
     <div class="list-title">신청 목록</div>
-    <div id="list-body"><table>
-      <thead><tr><th>이름</th><th>기간</th><th>일수</th><th>유형</th><th>비고</th><th>상태</th><th></th></tr></thead>
-      <tbody><tr>
-        <td><b>김선숙</b></td>
-        <td style="white-space:nowrap">2026-06-01 ~ 2026-06-06</td>
-        <td>6일</td>
-        <td>연차</td>
-        <td style="color:#888;font-size:11px">가족행사</td>
-        <td><select class="st-select" onchange="changeStatus(1,this.value)">
-          <option selected="">검토중</option><option>승인</option><option>조율필요</option><option>반려</option>
-        </select></td>
-        <td><button class="del-btn" onclick="deleteEntry(1)">✕</button></td>
-      </tr></tbody></table></div>
+    <div id="list-body"></div>
   </div>
 </div>
 
 <script>
+const API_URL='https://script.google.com/macros/s/AKfycbzNwqV4zQqVE9xVlKMLUrIO29gfbpX4uBiuoqYRRM2i72Zft7UVR12MaOEaRSaXB-H3CQ/exec';
 const MONTHS_KO=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 const SC={승인:'#1D9E75',검토중:'#378ADD',조율필요:'#BA7517',반려:'#888780'};
 const SB={승인:'#E1F5EE',검토중:'#E6F1FB',조율필요:'#FAEEDA',반려:'#F1EFE8'};
@@ -182,6 +157,43 @@ let data=[];
 let nextId=1;
 let viewMode='all';
 let focusMonth=null;
+
+function setSyncStatus(status, msg){
+  const dot=document.getElementById('sync-dot');
+  dot.className='sync-dot '+status;
+  document.getElementById('sync-msg').textContent=msg;
+}
+
+async function loadData(){
+  setSyncStatus('loading','데이터 불러오는 중...');
+  try{
+    const res=await fetch(API_URL+'?t='+Date.now());
+    const rows=await res.json();
+    data=rows.filter(r=>r.id).map(r=>({
+      id:Number(r.id),
+      name:String(r.name||''),
+      role:String(r.role||''),
+      start:String(r.start||''),
+      end:String(r.end||''),
+      type:String(r.type||'연차'),
+      note:String(r.note||''),
+      status:String(r.status||'검토중')
+    }));
+    nextId=data.length>0?Math.max(...data.map(d=>d.id))+1:1;
+    setSyncStatus('ok','마지막 동기화: '+new Date().toLocaleTimeString());
+    render();
+  }catch(e){
+    setSyncStatus('error','불러오기 실패 — 새로고침 버튼을 눌러주세요');
+  }
+}
+
+async function saveEntry(entry){
+  const res=await fetch(API_URL,{
+    method:'POST',
+    body:JSON.stringify(entry)
+  });
+  return await res.json();
+}
 
 function days(a,b){return Math.round((new Date(b)-new Date(a))/86400000)+1}
 function overlaps(a,b){return a.start<=b.end&&a.end>=b.start}
@@ -224,12 +236,6 @@ function showTT(e,id){
   tt.style.top=(e.clientY-10)+'px';
 }
 function hideTT(){document.getElementById('tt').style.display='none';}
-
-function changeStatus(id,val){
-  const e=data.find(d=>d.id===id);
-  if(e){e.status=val;render();}
-}
-function deleteEntry(id){data=data.filter(d=>d.id!==id);render();}
 
 function render(){
   const fd=getFiltered();
@@ -307,22 +313,19 @@ function render(){
     document.getElementById('list-body').innerHTML='<p style="font-size:12px;color:#aaa;padding:1rem 0">신청 내역이 없습니다.</p>';
   } else {
     document.getElementById('list-body').innerHTML=`<table>
-      <thead><tr><th>이름</th><th>기간</th><th>일수</th><th>유형</th><th>비고</th><th>상태</th><th></th></tr></thead>
+      <thead><tr><th>이름</th><th>기간</th><th>일수</th><th>유형</th><th>비고</th><th>상태</th></tr></thead>
       <tbody>${allData.map(d=>`<tr>
         <td><b>${d.name}</b>${conflictIds.has(d.id)?'<span style="background:#fcebeb;color:#a32d2d;font-size:10px;padding:1px 5px;border-radius:3px;margin-left:4px">충돌</span>':''}</td>
         <td style="white-space:nowrap">${d.start} ~ ${d.end}</td>
         <td>${days(d.start,d.end)}일</td>
         <td>${d.type}</td>
         <td style="color:#888;font-size:11px">${d.note||'-'}</td>
-        <td><select class="st-select" onchange="changeStatus(${d.id},this.value)">
-          ${['검토중','승인','조율필요','반려'].map(s=>`<option ${s===d.status?'selected':''}>${s}</option>`).join('')}
-        </select></td>
-        <td><button class="del-btn" onclick="deleteEntry(${d.id})">✕</button></td>
+        <td><span style="font-size:11px;padding:2px 7px;border-radius:20px;background:${SB[d.status]||'#f1efe8'};color:${ST[d.status]||'#444'}">${d.status}</span></td>
       </tr>`).join('')}</tbody></table>`;
   }
 }
 
-function addEntry(){
+async function addEntry(){
   const name=document.getElementById('f-name').value;
   const role=document.getElementById('f-role').value.trim();
   const start=document.getElementById('f-start').value;
@@ -330,22 +333,48 @@ function addEntry(){
   const type=document.getElementById('f-type').value;
   const note=document.getElementById('f-note').value.trim();
   const warn=document.getElementById('add-warn');
+  const ok=document.getElementById('add-ok');
+  const btn=document.getElementById('btn-submit');
+
+  warn.style.display='none';
+  ok.style.display='none';
+
   if(!start||!end){warn.style.display='block';warn.innerHTML='시작일과 종료일을 입력해 주세요.';return;}
   if(start>end){warn.style.display='block';warn.innerHTML='종료일이 시작일보다 빠릅니다.';return;}
+
   const entry={id:nextId++,name,role,start,end,type,note,status:'검토중'};
   const ov=data.filter(d=>d.name!==name&&(d.status==='승인'||d.status==='검토중')&&overlaps(d,entry));
   if(ov.length>0){
     warn.style.display='block';
     warn.innerHTML=`겹침 주의: ${ov.map(d=>d.name).join(', ')}와 기간이 겹칩니다. 조율필요로 등록됩니다.`;
     entry.status='조율필요';
-  } else warn.style.display='none';
-  if(role){const p=PEOPLE.find(p=>p.name===name);if(p)p.role=role;}
-  data.push(entry);
-  document.getElementById('f-start').value='';
-  document.getElementById('f-end').value='';
-  document.getElementById('f-role').value='';
-  document.getElementById('f-note').value='';
-  render();
+  }
+
+  btn.disabled=true;
+  btn.textContent='저장 중...';
+  setSyncStatus('loading','구글 시트에 저장 중...');
+
+  try{
+    await saveEntry(entry);
+    if(role){const p=PEOPLE.find(p=>p.name===name);if(p)p.role=role;}
+    data.push(entry);
+    document.getElementById('f-start').value='';
+    document.getElementById('f-end').value='';
+    document.getElementById('f-role').value='';
+    document.getElementById('f-note').value='';
+    ok.style.display='block';
+    ok.innerHTML=`${name}님의 연차 신청이 저장됐습니다. (${start} ~ ${end})`;
+    setSyncStatus('ok','저장 완료: '+new Date().toLocaleTimeString());
+    render();
+  }catch(e){
+    warn.style.display='block';
+    warn.innerHTML='저장 실패 — 잠시 후 다시 시도해 주세요.';
+    setSyncStatus('error','저장 실패');
+    nextId--;
+  }finally{
+    btn.disabled=false;
+    btn.textContent='등록';
+  }
 }
 
 function exportCSV(){
@@ -358,8 +387,8 @@ function exportCSV(){
   a.click();
 }
 
-render();
+loadData();
+setInterval(loadData, 60000);
 </script>
-
-
-</body></html>
+</body>
+</html>
