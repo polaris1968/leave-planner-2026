@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<!-- saved from url=(0121)file:///C:/Users/Pollalis/Downloads/%EC%97%B0%EC%B0%A8%EA%B3%84%ED%9A%8D_%EA%B0%84%ED%8A%B8%EC%B0%A8%ED%8A%B8_2026_2.html -->
+<html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 한국 관리자 연차 간트차트</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f8f7;color:#1a1a1a;padding:24px}
+.wrap{max-width:1100px;margin:0 auto}
+.top-bar{display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap}
+.top-bar h2{font-size:17px;font-weight:500;flex:1}
+.btn{background:transparent;border:1px solid #ccc;border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer;color:#333}
+.btn:hover{background:#f0f0ee}
+.btn.active{background:#e6f1fb;color:#0c447c;border-color:#85b7eb}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem}
+.card{background:#f1efe8;border-radius:8px;padding:0.6rem 0.9rem}
+.card-label{font-size:11px;color:#888;margin-bottom:3px}
+.card-val{font-size:20px;font-weight:500}
+.card-val.danger{color:#a32d2d}
+.card-val.warn{color:#854f0b}
+.gantt-outer{overflow-x:auto}
+.gantt-wrap{background:#fff;border:1px solid #e0e0da;border-radius:12px;overflow:hidden;min-width:700px}
+.gantt-header{display:flex;border-bottom:1px solid #e0e0da}
+.gh-name{width:140px;min-width:140px;padding:6px 10px;font-size:11px;color:#888;border-right:1px solid #e0e0da}
+.gh-months{flex:1;display:flex}
+.gh-month{flex:1;text-align:center;font-size:10px;color:#888;padding:6px 0;border-right:1px solid #e0e0da}
+.gh-month:last-child{border-right:none}
+.gantt-row{display:flex;border-bottom:1px solid #e0e0da;align-items:center;min-height:40px}
+.gantt-row:last-child{border-bottom:none}
+.gantt-row:hover{background:#fafaf8}
+.gr-name{width:140px;min-width:140px;padding:6px 10px;border-right:1px solid #e0e0da}
+.gr-name-text{font-size:12px;font-weight:500}
+.gr-name-sub{font-size:10px;color:#888;margin-top:1px}
+.gr-track{flex:1;position:relative;height:40px}
+.conflict-stripe{position:absolute;top:0;height:100%;opacity:0.12;pointer-events:none;background:#e24b4a}
+.leave-bar{position:absolute;top:8px;height:24px;border-radius:4px;cursor:pointer;display:flex;align-items:center;padding:0 6px;overflow:hidden}
+.leave-bar-label{font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tooltip-box{position:fixed;background:#fff;border:1px solid #ccc;border-radius:8px;padding:8px 12px;font-size:12px;z-index:999;pointer-events:none;min-width:190px;display:none;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+.tt-name{font-weight:500;margin-bottom:5px;font-size:13px}
+.tt-row{display:flex;justify-content:space-between;gap:12px;margin-top:3px}
+.tt-label{color:#888}
+.tt-val{font-weight:500}
+.conflict-banner{background:#fcebeb;border:1px solid #f09595;border-radius:8px;padding:8px 12px;font-size:12px;color:#a32d2d;margin-bottom:0.75rem;line-height:1.6;display:none}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:0.75rem;font-size:11px;color:#888;align-items:center}
+.legend-item{display:flex;align-items:center;gap:4px}
+.legend-dot{width:10px;height:10px;border-radius:2px}
+.month-filter{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:0.75rem}
+.mf-btn{padding:3px 9px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid #ccc;background:transparent;color:#888}
+.mf-btn.active{background:#f1efe8;color:#1a1a1a;border-color:#888}
+.add-section{background:#fff;border:1px solid #e0e0da;border-radius:12px;padding:1rem 1.25rem;margin-top:1rem}
+.add-title{font-size:13px;font-weight:500;color:#888;margin-bottom:0.75rem}
+.form-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:0.5rem}
+.fg{display:flex;flex-direction:column;gap:3px;flex:1;min-width:100px}
+.fg label{font-size:11px;color:#888}
+.fg input,.fg select{border:1px solid #ccc;border-radius:8px;padding:5px 8px;font-size:12px;background:#fff;color:#1a1a1a}
+.add-warn{background:#faeeda;border:1px solid #ef9f27;border-radius:8px;padding:6px 10px;font-size:12px;color:#633806;margin-bottom:0.5rem;display:none}
+.btn-add{background:#e6f1fb;color:#0c447c;border:1px solid #85b7eb;border-radius:8px;padding:6px 16px;font-size:12px;cursor:pointer;font-weight:500}
+.btn-add:hover{background:#b5d4f4}
+.list-section{background:#fff;border:1px solid #e0e0da;border-radius:12px;padding:1rem 1.25rem;margin-top:1rem}
+.list-title{font-size:13px;font-weight:500;color:#888;margin-bottom:0.75rem}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:6px 8px;color:#888;font-weight:400;border-bottom:1px solid #e0e0da}
+td{padding:6px 8px;border-bottom:1px solid #e0e0da;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:500}
+.st-select{border:1px solid #ccc;border-radius:4px;padding:2px 4px;font-size:11px;background:#fff;cursor:pointer}
+.del-btn{background:transparent;border:none;cursor:pointer;padding:2px 6px;border-radius:4px;font-size:12px;color:#888}
+.del-btn:hover{background:#f0f0ee;color:#a32d2d}
+@media(max-width:600px){.cards{grid-template-columns:repeat(2,1fr)}.form-row{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-bar">
+    <h2>2026 한국 관리자 연차 간트차트</h2>
+    <button class="btn active" id="vbtn-all" onclick="setView(&#39;all&#39;)">전체</button>
+    <button class="btn" id="vbtn-approved" onclick="setView(&#39;approved&#39;)">승인만</button>
+    <button class="btn" id="vbtn-pending" onclick="setView(&#39;pending&#39;)">검토중 포함</button>
+    <button class="btn" onclick="exportCSV()">CSV 내보내기</button>
+  </div>
+
+  <div class="cards" id="summary-cards">
+    <div class="card"><div class="card-label">인원</div><div class="card-val">7명</div></div>
+    <div class="card"><div class="card-label">신청 건수</div><div class="card-val">1건</div></div>
+    <div class="card"><div class="card-label">동시 부재 충돌</div><div class="card-val ">0건</div></div>
+    <div class="card"><div class="card-label">승인 완료</div><div class="card-val">0건</div></div></div>
+  <div id="conflict-banner" class="conflict-banner" style="display: none;"></div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div>승인</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#378ADD"></div>검토중</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#BA7517"></div>조율필요</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#888780"></div>반려</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#E24B4A;opacity:0.35"></div>겹침 구간</div>
+  </div>
+
+  <div class="month-filter" id="month-filter"><button class="mf-btn " onclick="setMonth(null)">전체</button><button class="mf-btn " onclick="setMonth(0)">1월</button><button class="mf-btn " onclick="setMonth(1)">2월</button><button class="mf-btn " onclick="setMonth(2)">3월</button><button class="mf-btn " onclick="setMonth(3)">4월</button><button class="mf-btn " onclick="setMonth(4)">5월</button><button class="mf-btn active" onclick="setMonth(5)">6월</button><button class="mf-btn " onclick="setMonth(6)">7월</button><button class="mf-btn " onclick="setMonth(7)">8월</button><button class="mf-btn " onclick="setMonth(8)">9월</button><button class="mf-btn " onclick="setMonth(9)">10월</button><button class="mf-btn " onclick="setMonth(10)">11월</button><button class="mf-btn " onclick="setMonth(11)">12월</button></div>
+  <div class="gantt-outer"><div class="gantt-wrap" id="gantt">
+    <div class="gantt-header"><div class="gh-name">이름</div><div class="gh-months"><div class="gh-month">6월</div></div></div>
+    <div class="gantt-row">
+      <div class="gr-name"><div class="gr-name-text">김선숙</div><div class="gr-name-sub">법인장</div></div>
+      <div class="gr-track"><div class="leave-bar" style="left:0.97%;width:20.00%;background:#E6F1FB;border:1px solid #378ADD" onmouseenter="showTT(event,1)" onmouseleave="hideTT()">
+        <span class="leave-bar-label" style="color:#0C447C">6일</span></div></div>
+    </div><div class="gantt-row">
+      <div class="gr-name"><div class="gr-name-text">김일환</div><div class="gr-name-sub">KIM ILHWAN</div></div>
+      <div class="gr-track"><div style="position:absolute;top:50%;transform:translateY(-50%);left:12px;font-size:11px;color:#aaa">신청 없음</div></div>
+    </div><div class="gantt-row">
+      <div class="gr-name"><div class="gr-name-text">엄춘섭</div><div class="gr-name-sub">EOM CHUNSEOB</div></div>
+      <div class="gr-track"><div style="position:absolute;top:50%;transform:translateY(-50%);left:12px;font-size:11px;color:#aaa">신청 없음</div></div>
+    </div><div class="gantt-row">
+      <div class="gr-name"><div class="gr-name-text">명준석</div><div class="gr-name-sub">MYOUNG JOONSUK</div></div>
+      <div class="gr-track"><div style="position:absolute;top:50%;transform:translateY(-50%);left:12px;font-size:11px;color:#aaa">신청 없음</div></div>
+    </div><div class="gantt-row">
+      <div class="gr-name"><div class="gr-name-text">기선희</div><div class="gr-name-sub">KI SUN HEE</div></div>
+      <div class="gr-track"><div style="position:absolute;top:50%;transform:translateY(-50%);left:12px;font-size:11px;color:#aaa">신청 없음</div></div>
+    </div><div class="gantt-row">
+      <div class="gr-name"><div class="gr-name-text">박현진</div><div class="gr-name-sub">PARK HYUNJIN</div></div>
+      <div class="gr-track"><div style="position:absolute;top:50%;transform:translateY(-50%);left:12px;font-size:11px;color:#aaa">신청 없음</div></div>
+    </div><div class="gantt-row">
+      <div class="gr-name"><div class="gr-name-text">신헌정</div><div class="gr-name-sub">고문</div></div>
+      <div class="gr-track"><div style="position:absolute;top:50%;transform:translateY(-50%);left:12px;font-size:11px;color:#aaa">신청 없음</div></div>
+    </div></div></div>
+  <div id="tt" class="tooltip-box"></div>
+
+  <div class="add-section">
+    <div class="add-title">연차 신청 추가</div>
+    <div class="form-row">
+      <div class="fg"><label>이름</label>
+        <select id="f-name">
+          <option>김선숙</option><option>김일환</option><option>엄춘섭</option>
+          <option>명준석</option><option>기선희</option><option>박현진</option><option>신헌정</option>
+        </select>
+      </div>
+      <div class="fg"><label>직책</label><input type="text" id="f-role" placeholder="생산관리자"></div>
+      <div class="fg"><label>시작일</label><input type="date" id="f-start" min="2026-01-01" max="2026-12-31"></div>
+      <div class="fg"><label>종료일</label><input type="date" id="f-end" min="2026-01-01" max="2026-12-31"></div>
+      <div class="fg"><label>유형</label>
+        <select id="f-type"><option>연차</option><option>특별휴가</option><option>경조사</option><option>병가</option></select>
+      </div>
+      <div class="fg"><label>비고</label><input type="text" id="f-note" placeholder="귀국, 가족행사 등"></div>
+    </div>
+    <div id="add-warn" class="add-warn" style="display: none;">시작일과 종료일을 입력해 주세요.</div>
+    <button class="btn-add" onclick="addEntry()">등록</button>
+  </div>
+
+  <div class="list-section">
+    <div class="list-title">신청 목록</div>
+    <div id="list-body"><table>
+      <thead><tr><th>이름</th><th>기간</th><th>일수</th><th>유형</th><th>비고</th><th>상태</th><th></th></tr></thead>
+      <tbody><tr>
+        <td><b>김선숙</b></td>
+        <td style="white-space:nowrap">2026-06-01 ~ 2026-06-06</td>
+        <td>6일</td>
+        <td>연차</td>
+        <td style="color:#888;font-size:11px">가족행사</td>
+        <td><select class="st-select" onchange="changeStatus(1,this.value)">
+          <option selected="">검토중</option><option>승인</option><option>조율필요</option><option>반려</option>
+        </select></td>
+        <td><button class="del-btn" onclick="deleteEntry(1)">✕</button></td>
+      </tr></tbody></table></div>
+  </div>
+</div>
+
+<script>
+const MONTHS_KO=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+const SC={승인:'#1D9E75',검토중:'#378ADD',조율필요:'#BA7517',반려:'#888780'};
+const SB={승인:'#E1F5EE',검토중:'#E6F1FB',조율필요:'#FAEEDA',반려:'#F1EFE8'};
+const ST={승인:'#085041',검토중:'#0C447C',조율필요:'#633806',반려:'#444441'};
+
+const PEOPLE=[
+  {name:'김선숙',nameEn:'KIM SUNSOOK',role:''},
+  {name:'김일환',nameEn:'KIM ILHWAN',role:''},
+  {name:'엄춘섭',nameEn:'EOM CHUNSEOB',role:''},
+  {name:'명준석',nameEn:'MYOUNG JOONSUK',role:''},
+  {name:'기선희',nameEn:'KI SUN HEE',role:''},
+  {name:'박현진',nameEn:'PARK HYUNJIN',role:''},
+  {name:'신헌정',nameEn:'SHIN HEONJEONG',role:'고문'},
+];
+
+let data=[];
+let nextId=1;
+let viewMode='all';
+let focusMonth=null;
+
+function days(a,b){return Math.round((new Date(b)-new Date(a))/86400000)+1}
+function overlaps(a,b){return a.start<=b.end&&a.end>=b.start}
+
+function getFiltered(){
+  if(viewMode==='approved') return data.filter(d=>d.status==='승인');
+  if(viewMode==='pending') return data.filter(d=>d.status!=='반려');
+  return data;
+}
+
+function getConflicts(entries){
+  const pairs=[];
+  for(let i=0;i<entries.length;i++)
+    for(let j=i+1;j<entries.length;j++)
+      if(overlaps(entries[i],entries[j])) pairs.push([entries[i],entries[j]]);
+  return pairs;
+}
+
+function setView(v){
+  viewMode=v;
+  ['all','approved','pending'].forEach(x=>{
+    document.getElementById('vbtn-'+x).classList.toggle('active',x===v);
+  });
+  render();
+}
+
+function setMonth(m){focusMonth=m;render();}
+
+function showTT(e,id){
+  const entry=data.find(d=>d.id===id);
+  if(!entry) return;
+  const tt=document.getElementById('tt');
+  tt.style.display='block';
+  tt.innerHTML=`<div class="tt-name" style="color:${SC[entry.status]||'#888'}">${entry.name} — ${entry.status}</div>
+    <div class="tt-row"><span class="tt-label">기간</span><span class="tt-val">${entry.start} ~ ${entry.end}</span></div>
+    <div class="tt-row"><span class="tt-label">일수</span><span class="tt-val">${days(entry.start,entry.end)}일</span></div>
+    <div class="tt-row"><span class="tt-label">유형</span><span class="tt-val">${entry.type}</span></div>
+    <div class="tt-row"><span class="tt-label">비고</span><span class="tt-val">${entry.note||'-'}</span></div>`;
+  tt.style.left=(e.clientX+12)+'px';
+  tt.style.top=(e.clientY-10)+'px';
+}
+function hideTT(){document.getElementById('tt').style.display='none';}
+
+function changeStatus(id,val){
+  const e=data.find(d=>d.id===id);
+  if(e){e.status=val;render();}
+}
+function deleteEntry(id){data=data.filter(d=>d.id!==id);render();}
+
+function render(){
+  const fd=getFiltered();
+  const conflicts=getConflicts(fd);
+  const conflictIds=new Set(conflicts.flatMap(p=>p.map(e=>e.id)));
+
+  document.getElementById('summary-cards').innerHTML=`
+    <div class="card"><div class="card-label">인원</div><div class="card-val">${PEOPLE.length}명</div></div>
+    <div class="card"><div class="card-label">신청 건수</div><div class="card-val">${fd.length}건</div></div>
+    <div class="card"><div class="card-label">동시 부재 충돌</div><div class="card-val ${conflicts.length>0?'danger':''}">${conflicts.length}건</div></div>
+    <div class="card"><div class="card-label">승인 완료</div><div class="card-val">${data.filter(d=>d.status==='승인').length}건</div></div>`;
+
+  const banner=document.getElementById('conflict-banner');
+  if(conflicts.length>0){
+    banner.style.display='block';
+    banner.innerHTML='겹침 감지 — '+conflicts.map(p=>`<b>${p[0].name}</b> + <b>${p[1].name}</b> (${p[0].start.slice(5)} ~ ${p[1].end.slice(5)} 구간)`).join(' &nbsp;/&nbsp; ');
+  } else banner.style.display='none';
+
+  const sm=focusMonth!==null?focusMonth:0;
+  const em=focusMonth!==null?focusMonth:11;
+  const startDate=new Date(2026,sm,1);
+  const endDate=new Date(2026,em+1,0);
+  const totalDays=Math.round((endDate-startDate)/86400000)+1;
+
+  document.getElementById('month-filter').innerHTML=
+    `<button class="mf-btn ${focusMonth===null?'active':''}" onclick="setMonth(null)">전체</button>`+
+    MONTHS_KO.map((m,i)=>`<button class="mf-btn ${focusMonth===i?'active':''}" onclick="setMonth(${i})">${m}</button>`).join('');
+
+  const conflictRanges=[];
+  conflicts.forEach(([a,b])=>{
+    const cs=a.start>b.start?a.start:b.start;
+    const ce=a.end<b.end?a.end:b.end;
+    conflictRanges.push({start:cs,end:ce,names:[a.name,b.name]});
+  });
+
+  const monthHeaders=[];
+  for(let m=sm;m<=em;m++) monthHeaders.push(`<div class="gh-month">${MONTHS_KO[m]}</div>`);
+
+  const rows=PEOPLE.map(person=>{
+    const entries=fd.filter(d=>d.name===person.name);
+    const bars=entries.map(entry=>{
+      const s=new Date(entry.start)<startDate?startDate:new Date(entry.start);
+      const e=new Date(entry.end)>endDate?endDate:new Date(entry.end);
+      if(s>e) return '';
+      const left=Math.max(0,(s-startDate)/86400000/totalDays*100);
+      const width=Math.min(Math.max(0.5,(e-s+86400000)/86400000/totalDays*100),100-left);
+      const thick=conflictIds.has(entry.id)?'2px':'1px';
+      return `<div class="leave-bar" style="left:${left.toFixed(2)}%;width:${width.toFixed(2)}%;background:${SB[entry.status]||'#F1EFE8'};border:${thick} solid ${SC[entry.status]||'#888'}"
+        onmouseenter="showTT(event,${entry.id})" onmouseleave="hideTT()">
+        <span class="leave-bar-label" style="color:${ST[entry.status]||'#444'}">${days(entry.start,entry.end)}일</span></div>`;
+    }).join('');
+
+    const stripes=conflictRanges.filter(cr=>cr.names.includes(person.name)).map(cr=>{
+      const cs=new Date(cr.start)<startDate?startDate:new Date(cr.start);
+      const ce=new Date(cr.end)>endDate?endDate:new Date(cr.end);
+      if(cs>ce) return '';
+      const l=Math.max(0,(cs-startDate)/86400000/totalDays*100);
+      const w=Math.min((ce-cs+86400000)/86400000/totalDays*100,100-l);
+      return `<div class="conflict-stripe" style="left:${l.toFixed(2)}%;width:${w.toFixed(2)}%"></div>`;
+    }).join('');
+
+    const role=PEOPLE.find(p=>p.name===person.name)?.role||'';
+    return `<div class="gantt-row">
+      <div class="gr-name"><div class="gr-name-text">${person.name}</div><div class="gr-name-sub">${role||person.nameEn}</div></div>
+      <div class="gr-track">${stripes}${bars}${entries.length===0?'<div style="position:absolute;top:50%;transform:translateY(-50%);left:12px;font-size:11px;color:#aaa">신청 없음</div>':''}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('gantt').innerHTML=`
+    <div class="gantt-header"><div class="gh-name">이름</div><div class="gh-months">${monthHeaders.join('')}</div></div>
+    ${rows}`;
+
+  const allData=data.slice().sort((a,b)=>a.start.localeCompare(b.start));
+  if(allData.length===0){
+    document.getElementById('list-body').innerHTML='<p style="font-size:12px;color:#aaa;padding:1rem 0">신청 내역이 없습니다.</p>';
+  } else {
+    document.getElementById('list-body').innerHTML=`<table>
+      <thead><tr><th>이름</th><th>기간</th><th>일수</th><th>유형</th><th>비고</th><th>상태</th><th></th></tr></thead>
+      <tbody>${allData.map(d=>`<tr>
+        <td><b>${d.name}</b>${conflictIds.has(d.id)?'<span style="background:#fcebeb;color:#a32d2d;font-size:10px;padding:1px 5px;border-radius:3px;margin-left:4px">충돌</span>':''}</td>
+        <td style="white-space:nowrap">${d.start} ~ ${d.end}</td>
+        <td>${days(d.start,d.end)}일</td>
+        <td>${d.type}</td>
+        <td style="color:#888;font-size:11px">${d.note||'-'}</td>
+        <td><select class="st-select" onchange="changeStatus(${d.id},this.value)">
+          ${['검토중','승인','조율필요','반려'].map(s=>`<option ${s===d.status?'selected':''}>${s}</option>`).join('')}
+        </select></td>
+        <td><button class="del-btn" onclick="deleteEntry(${d.id})">✕</button></td>
+      </tr>`).join('')}</tbody></table>`;
+  }
+}
+
+function addEntry(){
+  const name=document.getElementById('f-name').value;
+  const role=document.getElementById('f-role').value.trim();
+  const start=document.getElementById('f-start').value;
+  const end=document.getElementById('f-end').value;
+  const type=document.getElementById('f-type').value;
+  const note=document.getElementById('f-note').value.trim();
+  const warn=document.getElementById('add-warn');
+  if(!start||!end){warn.style.display='block';warn.innerHTML='시작일과 종료일을 입력해 주세요.';return;}
+  if(start>end){warn.style.display='block';warn.innerHTML='종료일이 시작일보다 빠릅니다.';return;}
+  const entry={id:nextId++,name,role,start,end,type,note,status:'검토중'};
+  const ov=data.filter(d=>d.name!==name&&(d.status==='승인'||d.status==='검토중')&&overlaps(d,entry));
+  if(ov.length>0){
+    warn.style.display='block';
+    warn.innerHTML=`겹침 주의: ${ov.map(d=>d.name).join(', ')}와 기간이 겹칩니다. 조율필요로 등록됩니다.`;
+    entry.status='조율필요';
+  } else warn.style.display='none';
+  if(role){const p=PEOPLE.find(p=>p.name===name);if(p)p.role=role;}
+  data.push(entry);
+  document.getElementById('f-start').value='';
+  document.getElementById('f-end').value='';
+  document.getElementById('f-role').value='';
+  document.getElementById('f-note').value='';
+  render();
+}
+
+function exportCSV(){
+  const headers=['이름','직책','시작일','종료일','일수','유형','비고','상태'];
+  const rows=data.map(d=>[d.name,d.role||'',d.start,d.end,days(d.start,d.end),d.type,d.note||'',d.status]);
+  const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download='연차계획_2026.csv';
+  a.click();
+}
+
+render();
+</script>
+
+
+</body></html>
