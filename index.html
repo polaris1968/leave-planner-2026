@@ -87,15 +87,12 @@ tr:last-child td{border-bottom:none}
     <button class="btn" onclick="exportCSV()">CSV 내보내기</button>
     <button class="btn" onclick="loadData()">새로고침</button>
   </div>
-
   <div class="sync-bar">
     <div class="sync-dot loading" id="sync-dot"></div>
     <span id="sync-msg">데이터 불러오는 중...</span>
   </div>
-
   <div class="cards" id="summary-cards"></div>
   <div id="conflict-banner" class="conflict-banner"></div>
-
   <div class="legend">
     <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div>승인</div>
     <div class="legend-item"><div class="legend-dot" style="background:#378ADD"></div>검토중</div>
@@ -103,11 +100,9 @@ tr:last-child td{border-bottom:none}
     <div class="legend-item"><div class="legend-dot" style="background:#888780"></div>반려</div>
     <div class="legend-item"><div class="legend-dot" style="background:#E24B4A;opacity:0.35"></div>겹침 구간</div>
   </div>
-
   <div class="month-filter" id="month-filter"></div>
   <div class="gantt-outer"><div class="gantt-wrap" id="gantt"></div></div>
   <div id="tt" class="tooltip-box"></div>
-
   <div class="add-section">
     <div class="add-title">연차 신청 추가</div>
     <div class="form-row">
@@ -129,20 +124,19 @@ tr:last-child td{border-bottom:none}
     <div id="add-ok" class="add-ok"></div>
     <button class="btn-add" id="btn-submit" onclick="addEntry()">등록</button>
   </div>
-
   <div class="list-section">
     <div class="list-title">신청 목록</div>
     <div id="list-body"></div>
   </div>
 </div>
-
+<div id="tt" class="tooltip-box"></div>
 <script>
-const API_URL='https://script.google.com/macros/s/AKfycbzZ4NQ7cla_Nl5Gb1tl9ll2uL0-Ww-we8bBAxFbNePg5B6f1x5KNVRXaBGMV_91gNQ64A/exec';
+// ✅ 새 배포 URL (버전 12)
+const API_URL='https://script.google.com/macros/s/AKfycbyuX66ZWwAZplVHQKm6XXSf8x6wA7PVkNS0BRlrKWEC6WYsMZEE8DClp3VP8M9vNvZvOQ/exec';
 const MONTHS_KO=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 const SC={승인:'#1D9E75',검토중:'#378ADD',조율필요:'#BA7517',반려:'#888780'};
 const SB={승인:'#E1F5EE',검토중:'#E6F1FB',조율필요:'#FAEEDA',반려:'#F1EFE8'};
 const ST={승인:'#085041',검토중:'#0C447C',조율필요:'#633806',반려:'#444441'};
-
 const PEOPLE=[
   {name:'김선숙',nameEn:'KIM SUNSOOK',role:''},
   {name:'김일환',nameEn:'KIM ILHWAN',role:''},
@@ -152,18 +146,15 @@ const PEOPLE=[
   {name:'박현진',nameEn:'PARK HYUNJIN',role:''},
   {name:'신헌정',nameEn:'SHIN HEONJEONG',role:'고문'},
 ];
-
 let data=[];
 let nextId=1;
 let viewMode='all';
 let focusMonth=null;
-
-function setSyncStatus(status, msg){
+function setSyncStatus(status,msg){
   const dot=document.getElementById('sync-dot');
   dot.className='sync-dot '+status;
   document.getElementById('sync-msg').textContent=msg;
 }
-
 async function loadData(){
   setSyncStatus('loading','데이터 불러오는 중...');
   try{
@@ -186,24 +177,17 @@ async function loadData(){
     setSyncStatus('error','불러오기 실패 — 새로고침 버튼을 눌러주세요');
   }
 }
-
 async function saveEntry(entry){
-  const res=await fetch(API_URL,{
-    method:'POST',
-    body:JSON.stringify(entry)
-  });
+  const res=await fetch(API_URL,{method:'POST',body:JSON.stringify(entry)});
   return await res.json();
 }
-
 function days(a,b){return Math.round((new Date(b)-new Date(a))/86400000)+1}
 function overlaps(a,b){return a.start<=b.end&&a.end>=b.start}
-
 function getFiltered(){
   if(viewMode==='approved') return data.filter(d=>d.status==='승인');
   if(viewMode==='pending') return data.filter(d=>d.status!=='반려');
   return data;
 }
-
 function getConflicts(entries){
   const pairs=[];
   for(let i=0;i<entries.length;i++)
@@ -211,7 +195,6 @@ function getConflicts(entries){
       if(overlaps(entries[i],entries[j])) pairs.push([entries[i],entries[j]]);
   return pairs;
 }
-
 function setView(v){
   viewMode=v;
   ['all','approved','pending'].forEach(x=>{
@@ -219,9 +202,7 @@ function setView(v){
   });
   render();
 }
-
 function setMonth(m){focusMonth=m;render();}
-
 function showTT(e,id){
   const entry=data.find(d=>d.id===id);
   if(!entry) return;
@@ -236,44 +217,36 @@ function showTT(e,id){
   tt.style.top=(e.clientY-10)+'px';
 }
 function hideTT(){document.getElementById('tt').style.display='none';}
-
 function render(){
   const fd=getFiltered();
   const conflicts=getConflicts(fd);
   const conflictIds=new Set(conflicts.flatMap(p=>p.map(e=>e.id)));
-
   document.getElementById('summary-cards').innerHTML=`
     <div class="card"><div class="card-label">인원</div><div class="card-val">${PEOPLE.length}명</div></div>
     <div class="card"><div class="card-label">신청 건수</div><div class="card-val">${fd.length}건</div></div>
     <div class="card"><div class="card-label">동시 부재 충돌</div><div class="card-val ${conflicts.length>0?'danger':''}">${conflicts.length}건</div></div>
     <div class="card"><div class="card-label">승인 완료</div><div class="card-val">${data.filter(d=>d.status==='승인').length}건</div></div>`;
-
   const banner=document.getElementById('conflict-banner');
   if(conflicts.length>0){
     banner.style.display='block';
     banner.innerHTML='겹침 감지 — '+conflicts.map(p=>`<b>${p[0].name}</b> + <b>${p[1].name}</b> (${p[0].start.slice(5)} ~ ${p[1].end.slice(5)} 구간)`).join(' &nbsp;/&nbsp; ');
   } else banner.style.display='none';
-
   const sm=focusMonth!==null?focusMonth:0;
   const em=focusMonth!==null?focusMonth:11;
   const startDate=new Date(2026,sm,1);
   const endDate=new Date(2026,em+1,0);
   const totalDays=Math.round((endDate-startDate)/86400000)+1;
-
   document.getElementById('month-filter').innerHTML=
     `<button class="mf-btn ${focusMonth===null?'active':''}" onclick="setMonth(null)">전체</button>`+
     MONTHS_KO.map((m,i)=>`<button class="mf-btn ${focusMonth===i?'active':''}" onclick="setMonth(${i})">${m}</button>`).join('');
-
   const conflictRanges=[];
   conflicts.forEach(([a,b])=>{
     const cs=a.start>b.start?a.start:b.start;
     const ce=a.end<b.end?a.end:b.end;
     conflictRanges.push({start:cs,end:ce,names:[a.name,b.name]});
   });
-
   const monthHeaders=[];
   for(let m=sm;m<=em;m++) monthHeaders.push(`<div class="gh-month">${MONTHS_KO[m]}</div>`);
-
   const rows=PEOPLE.map(person=>{
     const entries=fd.filter(d=>d.name===person.name);
     const bars=entries.map(entry=>{
@@ -287,7 +260,6 @@ function render(){
         onmouseenter="showTT(event,${entry.id})" onmouseleave="hideTT()">
         <span class="leave-bar-label" style="color:${ST[entry.status]||'#444'}">${days(entry.start,entry.end)}일</span></div>`;
     }).join('');
-
     const stripes=conflictRanges.filter(cr=>cr.names.includes(person.name)).map(cr=>{
       const cs=new Date(cr.start)<startDate?startDate:new Date(cr.start);
       const ce=new Date(cr.end)>endDate?endDate:new Date(cr.end);
@@ -296,18 +268,15 @@ function render(){
       const w=Math.min((ce-cs+86400000)/86400000/totalDays*100,100-l);
       return `<div class="conflict-stripe" style="left:${l.toFixed(2)}%;width:${w.toFixed(2)}%"></div>`;
     }).join('');
-
     const role=PEOPLE.find(p=>p.name===person.name)?.role||'';
     return `<div class="gantt-row">
       <div class="gr-name"><div class="gr-name-text">${person.name}</div><div class="gr-name-sub">${role||person.nameEn}</div></div>
       <div class="gr-track">${stripes}${bars}${entries.length===0?'<div style="position:absolute;top:50%;transform:translateY(-50%);left:12px;font-size:11px;color:#aaa">신청 없음</div>':''}</div>
     </div>`;
   }).join('');
-
   document.getElementById('gantt').innerHTML=`
     <div class="gantt-header"><div class="gh-name">이름</div><div class="gh-months">${monthHeaders.join('')}</div></div>
     ${rows}`;
-
   const allData=data.slice().sort((a,b)=>a.start.localeCompare(b.start));
   if(allData.length===0){
     document.getElementById('list-body').innerHTML='<p style="font-size:12px;color:#aaa;padding:1rem 0">신청 내역이 없습니다.</p>';
@@ -324,7 +293,6 @@ function render(){
       </tr>`).join('')}</tbody></table>`;
   }
 }
-
 async function addEntry(){
   const name=document.getElementById('f-name').value;
   const role=document.getElementById('f-role').value.trim();
@@ -335,13 +303,10 @@ async function addEntry(){
   const warn=document.getElementById('add-warn');
   const ok=document.getElementById('add-ok');
   const btn=document.getElementById('btn-submit');
-
   warn.style.display='none';
   ok.style.display='none';
-
   if(!start||!end){warn.style.display='block';warn.innerHTML='시작일과 종료일을 입력해 주세요.';return;}
   if(start>end){warn.style.display='block';warn.innerHTML='종료일이 시작일보다 빠릅니다.';return;}
-
   const entry={id:nextId++,name,role,start,end,type,note,status:'검토중'};
   const ov=data.filter(d=>d.name!==name&&(d.status==='승인'||d.status==='검토중')&&overlaps(d,entry));
   if(ov.length>0){
@@ -349,11 +314,9 @@ async function addEntry(){
     warn.innerHTML=`겹침 주의: ${ov.map(d=>d.name).join(', ')}와 기간이 겹칩니다. 조율필요로 등록됩니다.`;
     entry.status='조율필요';
   }
-
   btn.disabled=true;
   btn.textContent='저장 중...';
   setSyncStatus('loading','구글 시트에 저장 중...');
-
   try{
     await saveEntry(entry);
     if(role){const p=PEOPLE.find(p=>p.name===name);if(p)p.role=role;}
@@ -376,7 +339,6 @@ async function addEntry(){
     btn.textContent='등록';
   }
 }
-
 function exportCSV(){
   const headers=['이름','직책','시작일','종료일','일수','유형','비고','상태'];
   const rows=data.map(d=>[d.name,d.role||'',d.start,d.end,days(d.start,d.end),d.type,d.note||'',d.status]);
@@ -386,12 +348,8 @@ function exportCSV(){
   a.download='연차계획_2026.csv';
   a.click();
 }
-
 loadData();
-setInterval(loadData, 60000);
-</script>
-</body>
-</html>
+setInterval(loadData,60000);
 </script>
 </body>
 </html>
