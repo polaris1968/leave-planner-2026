@@ -65,9 +65,6 @@ table{width:100%;border-collapse:collapse;font-size:12px}
 th{text-align:left;padding:6px 8px;color:#888;font-weight:400;border-bottom:1px solid #e0e0da}
 td{padding:6px 8px;border-bottom:1px solid #e0e0da;vertical-align:middle}
 tr:last-child td{border-bottom:none}
-.st-select{border:1px solid #ccc;border-radius:4px;padding:2px 4px;font-size:11px;background:#fff;cursor:pointer}
-.del-btn{background:transparent;border:none;cursor:pointer;padding:2px 6px;border-radius:4px;font-size:12px;color:#888}
-.del-btn:hover{background:#f0f0ee;color:#a32d2d}
 .sync-bar{display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;font-size:12px;color:#888}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:#ccc}
 .sync-dot.ok{background:#1D9E75}
@@ -129,10 +126,9 @@ tr:last-child td{border-bottom:none}
     <div id="list-body"></div>
   </div>
 </div>
-<div id="tt" class="tooltip-box"></div>
 <script>
-// ✅ 새 배포 URL (버전 12)
-const API_URL='https://script.google.com/macros/s/AKfycbyuX66ZWwAZplVHQKm6XXSf8x6wA7PVkNS0BRlrKWEC6WYsMZEE8DClp3VP8M9vNvZvOQ/exec';
+// ✅ 정확한 배포 URL (버전 12)
+const API_URL='https://script.google.com/macros/s/AKfycbyuX66ZWwAZpIVHQKm6XXSf8x6wA7PVkNS0BRlrKWEC6WYsMZEE8DCIp3VP8M9vNvZvOQ/exec';
 const MONTHS_KO=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 const SC={승인:'#1D9E75',검토중:'#378ADD',조율필요:'#BA7517',반려:'#888780'};
 const SB={승인:'#E1F5EE',검토중:'#E6F1FB',조율필요:'#FAEEDA',반려:'#F1EFE8'};
