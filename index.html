@@ -18,7 +18,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .card-label{font-size:11px;color:#888;margin-bottom:3px}
 .card-val{font-size:20px;font-weight:500}
 .card-val.danger{color:#a32d2d}
-.card-val.warn{color:#854f0b}
 .gantt-outer{overflow-x:auto}
 .gantt-wrap{background:#fff;border:1px solid #e0e0da;border-radius:12px;overflow:hidden;min-width:700px}
 .gantt-header{display:flex;border-bottom:1px solid #e0e0da}
@@ -127,7 +126,6 @@ tr:last-child td{border-bottom:none}
   </div>
 </div>
 <script>
-// ✅ 정확한 배포 URL (버전 12)
 const API_URL='https://script.google.com/macros/s/AKfycbyuX66ZWwAZpIVHQKm6XXSf8x6wA7PVkNS0BRlrKWEC6WYsMZEE8DCIp3VP8M9vNvZvOQ/exec';
 const MONTHS_KO=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 const SC={승인:'#1D9E75',검토중:'#378ADD',조율필요:'#BA7517',반려:'#888780'};
@@ -142,10 +140,25 @@ const PEOPLE=[
   {name:'박현진',nameEn:'PARK HYUNJIN',role:''},
   {name:'신헌정',nameEn:'SHIN HEONJEONG',role:'고문'},
 ];
+
+// ✅ ISO 날짜를 베트남(UTC+7) 기준 yyyy-MM-dd로 변환
+function toLocalDate(val) {
+  if (!val) return '';
+  const s = String(val);
+  if (s.length === 10) return s; // 이미 yyyy-MM-dd 형식
+  // ISO 형식 (예: 2026-05-31T17:00:00.000Z) → UTC+7 변환
+  const d = new Date(s);
+  if (isNaN(d)) return s;
+  const offset = 7 * 60; // UTC+7
+  const local = new Date(d.getTime() + offset * 60 * 1000);
+  return local.toISOString().substring(0, 10);
+}
+
 let data=[];
 let nextId=1;
 let viewMode='all';
 let focusMonth=null;
+
 function setSyncStatus(status,msg){
   const dot=document.getElementById('sync-dot');
   dot.className='sync-dot '+status;
@@ -160,8 +173,8 @@ async function loadData(){
       id:Number(r.id),
       name:String(r.name||''),
       role:String(r.role||''),
-      start:String(r.start||''),
-      end:String(r.end||''),
+      start:toLocalDate(r.start),  // ✅ 날짜 변환 적용
+      end:toLocalDate(r.end),      // ✅ 날짜 변환 적용
       type:String(r.type||'연차'),
       note:String(r.note||''),
       status:String(r.status||'검토중')
